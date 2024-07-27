@@ -15,10 +15,15 @@ const waitListUser = async (req, res) => {
     } else {
       res
         .status(400)
-        .json({ status: "500", message: "You are already registered" });
+        .json({ status: "400", message: "You are already registered" });
     }
   } catch (error) {
-    res.status(500).json({ status: "500", message: "Something went wrong" });
+    res
+      .status(500)
+      .json({
+        status: "500",
+        message: `Something went wrong: ${error.message}`,
+      });
   }
 };
 

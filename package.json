@@ -24,5 +24,15 @@
   "bugs": {
     "url": "https://github.com/Headstarter-AI/LeetCodeAI/issues"
   },
-  "homepage": "https://github.com/Headstarter-AI/LeetCodeAI#readme"
+  "homepage": "https://github.com/Headstarter-AI/LeetCodeAI#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.3"
+  }
 }
