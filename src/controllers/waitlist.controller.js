@@ -1,10 +1,8 @@
 import { WaitListUser } from "../models/waitlist.models.js";
 const waitListUser = async (req, res) => {
   const { email } = req.body;
-  console.log(email);
   try {
     const existUser = await WaitListUser.findOne({ email });
-    console.log(existUser);
 
     if (!existUser) {
       const waitListUser = await WaitListUser.create({
@@ -18,12 +16,10 @@ const waitListUser = async (req, res) => {
         .json({ status: "400", message: "You are already registered" });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "500",
-        message: `Something went wrong: ${error.message}`,
-      });
+    res.status(500).json({
+      status: "500",
+      message: `Something went wrong: ${error.message}`,
+    });
   }
 };
 
