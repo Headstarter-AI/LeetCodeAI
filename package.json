@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/Headstarter-AI/LeetCodeAI#readme",
   "dependencies": {
+    "@google-cloud/aiplatform": "^3.25.0",
+    "@google/generative-ai": "^0.1.3",
     "@huggingface/inference": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

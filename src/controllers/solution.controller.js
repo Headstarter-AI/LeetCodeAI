@@ -1,65 +1,81 @@
-// File: services/ragService.js
+import {
+  generateHintsWithRAG,
+  generateAlgorithmsWithRAG,
+  generateCodeWithRAG,
+} from "../services/ragService.js";
+import Problem from "../models/problem.model.js";
 
-import { MongoClient } from "mongodb";
-import { Configuration, OpenAIApi } from "openai";
-import dotenv from "dotenv";
+export const generateHints = async (req, res) => {
+  try {
+    const { problem } = req.body;
+    if (!problem) {
+      return res.status(400).json({ error: "Problem statement is required." });
+    }
 
-dotenv.config();
+    const hints = await generateHintsWithRAG(problem);
+    res.status(200).json({ hints });
+  } catch (error) {
+    console.error("Error generating hints:", error);
+    res.status(500).json({ error: "Failed to generate hints." });
+  }
+};
 
-const mongoClient = new MongoClient(process.env.MONGODB_URI);
-const openaiConfig = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(openaiConfig);
+export const generateAlgorithms = async (req, res) => {
+  try {
+    const { problem } = req.body;
+    if (!problem) {
+      return res.status(400).json({ error: "Problem statement is required." });
+    }
 
-async function connectToDatabase() {
-  await mongoClient.connect();
-  return mongoClient.db("leetcode_problems");
-}
+    const algorithms = await generateAlgorithmsWithRAG(problem);
+    res.status(200).json({ algorithms });
+  } catch (error) {
+    console.error("Error generating algorithms:", error);
+    res.status(500).json({ error: "Failed to generate algorithms." });
+  }
+};
 
-async function searchSimilarProblems(problem, db) {
-  const problems = db.collection("problems");
-  const result = await problems
-    .aggregate([
-      {
-        $search: {
-          index: "problem_search",
-          text: {
-            query: problem,
-            path: {
-              wildcard: "*",
-            },
-          },
-        },
-      },
-      {
-        $limit: 5,
-      },
-    ])
-    .toArray();
+export const generateCode = async (req, res) => {
+  try {
+    const { problem, language } = req.body;
+    if (!problem || !language) {
+      return res
+        .status(400)
+        .json({
+          error: "Problem statement and programming language are required.",
+        });
+    }
 
-  return result;
-}
+    const code = await generateCodeWithRAG(problem, language);
+    res.status(200).json({ code });
+  } catch (error) {
+    console.error("Error generating code:", error);
+    res.status(500).json({ error: "Failed to generate code." });
+  }
+};
 
-async function generateHintsWithRAG(problem) {
-  const db = await connectToDatabase();
-  const similarProblems = await searchSimilarProblems(problem, db);
+export const addProblem = async (req, res) => {
+  try {
+    const { title, description, difficulty, tags } = req.body;
+    if (!title || !description || !difficulty) {
+      return res
+        .status(400)
+        .json({ error: "Title, description, and difficulty are required." });
+    }
 
-  const context = similarProblems
-    .map((p) => `${p.title}: ${p.description}`)
-    .join("\n\n");
+    const newProblem = new Problem({
+      title,
+      description,
+      difficulty,
+      tags: tags || [],
+    });
 
-  const prompt = `Given the following similar LeetCode problems:\n\n${context}\n\nGenerate 3 helpful hints for solving this problem:\n${problem}\n\nHints:`;
-
-  const response = await openai.createCompletion({
-    model: "text-davinci-003",
-    prompt: prompt,
-    max_tokens: 300,
-    temperature: 0.7,
-  });
-
-  const hints = response.data.choices[0].text.trim().split("\n");
-  return hints;
-}
-
-export { generateHintsWithRAG };
+    await newProblem.save();
+    res
+      .status(201)
+      .json({ message: "Problem added successfully", problem: newProblem });
+  } catch (error) {
+    console.error("Error adding problem:", error);
+    res.status(500).json({ error: "Failed to add problem." });
+  }
+};
